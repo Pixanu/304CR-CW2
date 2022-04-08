@@ -8,8 +8,10 @@ public class PlayerController : MonoBehaviour
     public float walkSpeed = 1.8f;
     public float rotationSpeed = 180;
 
-    public static bool IsStealth = false;
+    public bool IsStealth = false;
     public static bool IsHidden = false;
+    public bool IsMoving = false;
+    public bool IsDead = false;
 
     //Local 
     private bool isHidable = false;
@@ -32,6 +34,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (IsDead)
+            return;
         CheckHideSpot();
 
         if (!IsHidden)
@@ -44,6 +48,11 @@ public class PlayerController : MonoBehaviour
 
     #region Methods
 
+    public void KillPlayer()
+    {
+        IsDead = true;
+        animator.SetBool("IsDeath",true);
+    }
     void CheckHideSpot()
     {
         if(Input.GetKey(KeyCode.E) && isHidable)
@@ -67,6 +76,7 @@ public class PlayerController : MonoBehaviour
             transform.Translate(Vector3.forward * verticalMove * runSpeed * Time.deltaTime, Space.Self);
 
         animator.SetFloat("MoveSpeed",verticalMove);
+        IsMoving = verticalMove !=0;
     }
 
     void Rotation()
