@@ -50,8 +50,8 @@ public class PlayerController : MonoBehaviour
 
     public void KillPlayer()
     {
-        IsDead = true;
-        animator.SetBool("IsDeath",true);
+        //IsDead = true;
+        //animator.SetBool("IsDeath",true);
     }
     void CheckHideSpot()
     {

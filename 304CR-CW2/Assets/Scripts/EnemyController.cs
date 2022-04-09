@@ -10,7 +10,8 @@ public enum AIState
     Wait,
     Alert,
     Chase,
-    Shoot
+    Shoot,
+    GoingBackToPatrol
 }
 
 
@@ -19,9 +20,24 @@ public class EnemyController : MonoBehaviour
     public AIState actualState = AIState.Idle;
 
     [Header("Movement")]
+   
     public GameObject[] checkPoints;
-    public float walkSpeed = 2;
-    public float runSpeed = 4;
+
+    [Header("Walk Curve")]
+    [SerializeField] private AnimationCurve walkCurve;
+    private float walkSpeed;
+    private float walkTime;
+
+    [Header("Run Curve")]
+    [SerializeField] private AnimationCurve runCurve;
+    private float runSpeed;
+    private float runTime;
+
+    [Header("Chase Curve")]
+    [SerializeField] private AnimationCurve chaseStopCurve;
+    private float stopChase;
+    private float chaseTime;
+
     public float waitTime = 5;
 
     [Header("Senses")]
@@ -42,6 +58,15 @@ public class EnemyController : MonoBehaviour
     
     void Start()
     {
+        walkTime = 0f;
+        walkSpeed = walkCurve.Evaluate(walkTime);
+
+        runTime = 0f;
+        runSpeed = runCurve.Evaluate(runTime);
+
+        chaseTime = 0f;
+        stopChase = chaseStopCurve.Evaluate(chaseTime);
+        
         player = FindObjectOfType<PlayerController>();
         agent = GetComponent<NavMeshAgent>();
         anim= transform.GetComponentInChildren<Animator>();
@@ -57,12 +82,14 @@ public class EnemyController : MonoBehaviour
             case AIState.Idle:
                 //Actions
                 ChangeState(AIState.Patrol);
+
                 //Decisions
 
                 break;
             case AIState.Patrol:
                 //Actions
                 MoveToCheckpoint();
+
                 //Decisions
                 if (Destination())
                 {
@@ -85,6 +112,7 @@ public class EnemyController : MonoBehaviour
             case AIState.Alert:
                 //Actions
                 MoveToSound();
+
                 //Decisions
                 if (Destination())
                     ChangeState(AIState.Wait);
@@ -102,11 +130,20 @@ public class EnemyController : MonoBehaviour
                     ChangeState(AIState.Shoot);
                 if(!PlayerAlive())
                     ChangeState(AIState.Wait);
+                if(PlayerTooFar())
+                    ChangeState(AIState.GoingBackToPatrol);
                 break;
             case AIState.Shoot:
                 player.KillPlayer();
                 ChangeState(AIState.Wait);
                 break;
+            case AIState.GoingBackToPatrol:
+                //Action
+                //Debug.Log("I've stopped chasing, going back to patrol");
+                ChangeState(AIState.Patrol);
+                //Decision
+                break;
+
         }
     }
 
@@ -120,6 +157,17 @@ public class EnemyController : MonoBehaviour
 
     void UpdateAnimation()
     {
+        walkTime += Time.deltaTime;
+        walkSpeed = walkCurve.Evaluate(walkTime);
+
+        runTime +=Time.deltaTime;
+        runSpeed = runCurve.Evaluate(runTime);
+
+        chaseTime +=Time.deltaTime;
+        stopChase = chaseStopCurve.Evaluate(chaseTime);
+
+
+
         switch (actualState)
         {
             case AIState.Idle:
@@ -161,6 +209,12 @@ public class EnemyController : MonoBehaviour
                 anim.SetBool("IsAlert", false);
                 anim.SetBool("IsShooting", true);
                 break;
+            case AIState.GoingBackToPatrol:
+                agent.speed = walkSpeed;
+                anim.SetBool("IsMoving", true);
+                anim.SetBool("IsAlert", false);
+                anim.SetBool("IsShooting", false);
+                break;
         }
 
     }
@@ -173,6 +227,8 @@ public class EnemyController : MonoBehaviour
         agent.destination = player.transform.position;
         agent.isStopped = false;
     }
+
+   
 
     void MoveToSound()
     {
@@ -204,6 +260,10 @@ public class EnemyController : MonoBehaviour
     bool Destination()
     {
         return agent.remainingDistance < agent.stoppingDistance && !agent.pathPending;
+    }
+    bool PlayerTooFar()
+    { 
+        return agent.remainingDistance > stopChase;
     }
 
     bool WaitTime(float timeToWait)
@@ -239,7 +299,7 @@ public class EnemyController : MonoBehaviour
             return false;
         //in range
         float distanceToPlayer = Vector3.Distance(transform.position,player.transform.position);   
-        if(distanceToPlayer< sightRange)
+        if(distanceToPlayer < sightRange)
         {
             //in angle
             Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
