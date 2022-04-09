@@ -52,12 +52,15 @@ public class EnemyController : MonoBehaviour
     private int NrCheckpoint = 0;
     private NavMeshAgent agent;
     PlayerController player;
+    AudioSource gun;
     Vector3 soundSource;
     Ray ray;
     RaycastHit hit;
     
     void Start()
     {
+        gun = GetComponent<AudioSource>();
+
         walkTime = 0f;
         walkSpeed = walkCurve.Evaluate(walkTime);
 
@@ -204,6 +207,7 @@ public class EnemyController : MonoBehaviour
                 break;
             case AIState.Shoot:
                 agent.speed = 0;
+                gun.Play();
                 agent.isStopped = true;
                 anim.SetBool("IsMoving", false);
                 anim.SetBool("IsAlert", false);
@@ -320,6 +324,7 @@ public class EnemyController : MonoBehaviour
                     //is player
                     if(hit.transform.gameObject.tag == "Player")
                     {
+                        
                         return true;
                     }
                 }
