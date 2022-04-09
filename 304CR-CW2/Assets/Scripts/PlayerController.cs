@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public int maxHealth = 100;
+    public int currentHealth;
+
+    public HealthBar healthBar; 
+
     public float runSpeed = 5;
     public float walkSpeed = 1.8f;
     public float rotationSpeed = 180;
@@ -26,6 +31,9 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        healthBar.SetMaxHealth(maxHealth);
+        currentHealth = maxHealth;
+
         graphics = transform.GetChild(0).gameObject;
         animator = transform.GetComponentInChildren<Animator>();
         rb= GetComponent<Rigidbody>();
@@ -44,14 +52,22 @@ public class PlayerController : MonoBehaviour
             Move();
             Rotation();
         }
+
+
+
     }
 
     #region Methods
 
     public void KillPlayer()
     {
-        //IsDead = true;
-        //animator.SetBool("IsDeath",true);
+        TakeDamage(20);
+        if(currentHealth <= 0 )
+        {
+            IsDead = true;
+            animator.SetBool("IsDeath", true);
+        }
+       
     }
     void CheckHideSpot()
     {
@@ -65,7 +81,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
 
+        healthBar.SetHealth(currentHealth);
+    }
     void Move()
     {
         float verticalMove = Input.GetAxis("Vertical");

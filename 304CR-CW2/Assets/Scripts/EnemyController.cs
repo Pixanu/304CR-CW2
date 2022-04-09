@@ -126,7 +126,7 @@ public class EnemyController : MonoBehaviour
                 MoveToPlayer();
 
                 //Decisiions
-                if (PlayerInSight() && WaitTime(0.05f))
+                if (PlayerInSight() && WaitTime(0.5f))
                     ChangeState(AIState.Shoot);
                 if(!PlayerAlive())
                     ChangeState(AIState.Wait);
