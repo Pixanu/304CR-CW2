@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Hidable
   - message
+  - Enemy
   layers:
   - Default
   - TransparentFX

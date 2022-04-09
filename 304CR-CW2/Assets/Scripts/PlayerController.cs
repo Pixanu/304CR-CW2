@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -53,8 +54,7 @@ public class PlayerController : MonoBehaviour
             Rotation();
         }
 
-
-
+      
     }
 
     #region Methods
@@ -66,6 +66,7 @@ public class PlayerController : MonoBehaviour
         {
             IsDead = true;
             animator.SetBool("IsDeath", true);
+            StartCoroutine(RelodScene());
         }
        
     }
@@ -128,5 +129,11 @@ public class PlayerController : MonoBehaviour
     {
         if(other.gameObject.tag == "Hidable")
             isHidable = false;
+    }
+
+    IEnumerator RelodScene()
+    {
+        yield return new WaitForSeconds(8f);
+        SceneManager.LoadScene("Testing");
     }
 }
