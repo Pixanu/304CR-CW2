@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
+//States
 public enum AIState
 {
     Idle,
@@ -20,20 +22,23 @@ public class EnemyController : MonoBehaviour
     public AIState actualState = AIState.Idle;
 
     [Header("Movement")]
-   
+
     public GameObject[] checkPoints;
 
     [Header("Walk Curve")]
+
     [SerializeField] private AnimationCurve walkCurve;
     private float walkSpeed;
     private float walkTime;
 
     [Header("Run Curve")]
+
     [SerializeField] private AnimationCurve runCurve;
     private float runSpeed;
     private float runTime;
 
     [Header("Chase Curve")]
+
     [SerializeField] private AnimationCurve chaseStopCurve;
     private float stopChase;
     private float chaseTime;
@@ -41,6 +46,7 @@ public class EnemyController : MonoBehaviour
     public float waitTime = 5;
 
     [Header("Senses")]
+
     public float hearRange = 4;
     public float sightRange = 5;
     [Range(0, 360)]
@@ -61,6 +67,7 @@ public class EnemyController : MonoBehaviour
     {
         gun = GetComponent<AudioSource>();
 
+        //Evaluating the walk,run and chase aniamtion curves at the beggining of the curve.
         walkTime = 0f;
         walkSpeed = walkCurve.Evaluate(walkTime);
 
@@ -70,6 +77,7 @@ public class EnemyController : MonoBehaviour
         chaseTime = 0f;
         stopChase = chaseStopCurve.Evaluate(chaseTime);
         
+        //Get necessary components
         player = FindObjectOfType<PlayerController>();
         agent = GetComponent<NavMeshAgent>();
         anim= transform.GetComponentInChildren<Animator>();
@@ -83,17 +91,15 @@ public class EnemyController : MonoBehaviour
         switch (actualState)
         {
             case AIState.Idle:
-                //Actions
+                //ACTIONS
                 ChangeState(AIState.Patrol);
-
-                //Decisions
-
+                //DECISIONS
                 break;
-            case AIState.Patrol:
-                //Actions
-                MoveToCheckpoint();
 
-                //Decisions
+            case AIState.Patrol:
+                //ACTIONS
+                MoveToCheckpoint();
+                //DECISIONS
                 if (Destination())
                 {
                     NextCheckpoint();
@@ -104,6 +110,7 @@ public class EnemyController : MonoBehaviour
                 if(PlayerInSight())
                     ChangeState(AIState.Chase);
                 break;
+
             case AIState.Wait:
                 if(WaitTime(waitTime))
                     ChangeState(AIState.Patrol);
@@ -112,11 +119,11 @@ public class EnemyController : MonoBehaviour
                 if (PlayerInSight())
                     ChangeState(AIState.Chase);
                 break;
-            case AIState.Alert:
-                //Actions
-                MoveToSound();
 
-                //Decisions
+            case AIState.Alert:
+                //ACTIONS
+                MoveToSound();
+                //DECISIONS
                 if (Destination())
                     ChangeState(AIState.Wait);
                 if(PlayerIsHeard())
@@ -124,55 +131,53 @@ public class EnemyController : MonoBehaviour
                 if (PlayerInSight())
                     ChangeState(AIState.Chase);
                 break;
-            case AIState.Chase:
-                //Actions
-                MoveToPlayer();
 
-                //Decisiions
-                if (PlayerInSight() && WaitTime(0.5f))
-                    ChangeState(AIState.Shoot);
-                if(!PlayerAlive())
+            case AIState.Chase:
+                //ACTIONS
+                PlayerTooFar();
+                MoveToPlayer();
+                //DECISIONS
+                if (!PlayerAlive())
                     ChangeState(AIState.Wait);
-                if(PlayerTooFar())
-                    ChangeState(AIState.GoingBackToPatrol);
+
                 break;
             case AIState.Shoot:
                 player.KillPlayer();
                 ChangeState(AIState.Wait);
                 break;
-            case AIState.GoingBackToPatrol:
-                //Action
-                //Debug.Log("I've stopped chasing, going back to patrol");
-                ChangeState(AIState.Patrol);
-                //Decision
-                break;
 
+            case AIState.GoingBackToPatrol:
+                //ACTIONS
+                ChangeState(AIState.Patrol);
+                //DECISIONS
+                break;
         }
     }
 
-    
-
+    //Change State function
     void ChangeState(AIState newState)
     {
         actualState = newState;
         stateTimer = 0;
 
+        //Call the update animation function
         UpdateAnimation();
     }
 
     void UpdateAnimation()
     {
+        //re-evaluation of the curves based on the time that it passed.
         walkTime += Time.deltaTime;
         walkSpeed = walkCurve.Evaluate(walkTime);
 
-        runTime +=Time.deltaTime;
+        runTime += Time.deltaTime;
         runSpeed = runCurve.Evaluate(runTime);
 
-        chaseTime +=Time.deltaTime;
+        chaseTime += Time.deltaTime;
         stopChase = chaseStopCurve.Evaluate(chaseTime);
 
-
-
+        //Based on the state taht the AI is in specific animation bool variables are true or false
+        //Those are declared within the AI/ Enemy Animation Controller
         switch (actualState)
         {
             case AIState.Idle:
@@ -227,56 +232,86 @@ public class EnemyController : MonoBehaviour
 
 
     #region Actions
-
+    //Move towards the player
     void MoveToPlayer()
     {
         agent.destination = player.transform.position;
         agent.isStopped = false;
     }
 
-   
-
+    //Moves towards the Sound Source
     void MoveToSound()
     {
         agent.destination = soundSource;
         agent.isStopped = false;
     }
 
+    //Move to one of the checkpoints
     void MoveToCheckpoint()
     {
         agent.destination = checkPoints[NrCheckpoint].transform.position;
         agent.isStopped = false;
     }
 
+    //If one checkpoint is reached moved to the next one
     void NextCheckpoint()
     {
         NrCheckpoint++;
         if (NrCheckpoint >= checkPoints.Length)
             NrCheckpoint = 0;
     }
-
     #endregion
+
 
     #region Decisions
 
+    //Check if player is alive
     bool PlayerAlive()
     {
         return !player.IsDead;
     }
+    
+    //Destination Check
     bool Destination()
     {
         return agent.remainingDistance < agent.stoppingDistance && !agent.pathPending;
     }
-    bool PlayerTooFar()
-    { 
-        return agent.remainingDistance > stopChase;
-    }
 
+    //Fuzzy State MAchine or Fuzzy Logic
+    void PlayerTooFar()
+    {
+        //Function only called in the Chase State
+        //If the distance is bigger than the end of the animation curve stop chassing
+        
+        if (agent.remainingDistance > stopChase)
+        {
+            ChangeState(AIState.GoingBackToPatrol);
+            Debug.Log("The Player escaped, going back to Patrol");
+        }
+        //If is less for example additional check to see if player is in sight
+        //Change the state to Shoot
+        else if (agent.remainingDistance < stopChase/2)
+        {
+            if (PlayerInSight() && WaitTime(0.5f))
+                ChangeState(AIState.Shoot);
+            Debug.Log("The Player is in sight and Shoot State Active");
+        }
+        else
+        //If player not in sight durring chasing listen for sounds moce to an Alert state
+        {
+            if(!PlayerInSight())
+                ChangeState(AIState.Alert);
+            Debug.Log("Player not in sight, AI is listening to sounds");
+        }
+
+    }
+    //Wait/Delay before performing an action
     bool WaitTime(float timeToWait)
     {
         return stateTimer > timeToWait;
     }
 
+    //Gizmos for hearing and sight
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
@@ -285,11 +320,14 @@ public class EnemyController : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, sightRange);
     }
 
+    //Hearing Sense
     bool PlayerIsHeard()
     {
         if(player.IsDead)
             return false;
 
+        //If the player is not in Stealth Mode and is moving and the distance from the player to the Ai is less than its hearing range 
+        //set the sound source ("footsteps") to the player position
         float distance = Vector3.Distance(transform.position, player.transform.position);
         bool result = !player.IsStealth && player.IsMoving && distance < hearRange;
 
@@ -299,23 +337,29 @@ public class EnemyController : MonoBehaviour
 
     }
 
+    //Sight Sense
     bool PlayerInSight()
     {
         if (player.IsDead)
             return false;
-        //in range
+        //In range
         float distanceToPlayer = Vector3.Distance(transform.position,player.transform.position);   
         if(distanceToPlayer < sightRange)
         {
-            //in angle
+            //In angle
             Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
             float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
             if(angleToPlayer < sightAngle / 2)
             {
+
                 Debug.DrawLine(transform.position, player.transform.position);
-                //in line
+                //In line
                 Vector3 startPos;
-                if(player.IsStealth)
+
+                //Based on the start postion of the raycast , if the player is in stealth Mode multiply by 0.7 if not by 1.4
+                //If the player is hiding behind a low wall or not
+
+                if (player.IsStealth)
                     startPos = transform.position + Vector3.up * 0.7f;
                 else
                     startPos = transform.position + Vector3.up * 1.4f;
@@ -323,11 +367,12 @@ public class EnemyController : MonoBehaviour
                 ray = new Ray(startPos, directionToPlayer);
                 if(Physics.Raycast(ray,out hit))
                 {
-                    //is player
+                    //Is player
+                    //Raycast hit to find the player tag
                     if(hit.transform.gameObject.tag == "Player")
                     {
-                        
                         return true;
+                        //If all the checks return true, it means that the AI succesfully found the player 
                     }
                 }
             }

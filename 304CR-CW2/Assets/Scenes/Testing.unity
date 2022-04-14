@@ -1410,7 +1410,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2e52c12bfef73bd40ba0a0a1c45d389c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2198,7 +2198,7 @@ MonoBehaviour:
     Crouch: C
 
     Invisible next
-    to specific walls: E
+    to purple walls: E
 
     (You may need to press "E" couple of times )'
 --- !u!222 &776584210
@@ -4722,7 +4722,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2e52c12bfef73bd40ba0a0a1c45d389c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5853,6 +5853,11 @@ PrefabInstance:
       propertyPath: healthBar
       value: 
       objectReference: {fileID: 762341487}
+    - target: {fileID: 3172020173873214527, guid: 47ed763d3e3d9be43a30d967575fd3d0,
+        type: 3}
+      propertyPath: maxHealth
+      value: 200
+      objectReference: {fileID: 0}
     - target: {fileID: 3172020173873214527, guid: 47ed763d3e3d9be43a30d967575fd3d0,
         type: 3}
       propertyPath: moveSpeed

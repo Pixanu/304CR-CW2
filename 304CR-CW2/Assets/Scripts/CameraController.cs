@@ -6,16 +6,20 @@ public class CameraController : MonoBehaviour
 {
     public GameObject target;
 
-    //camera follow speed
+    //Camera follow speed
     public float followSpeed = 3;
-    //camera offset position
+
+    //Camera offset position
     public Vector3 followOffset;
-    //camera top down perspective when player is hidden
+
+    //Camera top down perspective when player is hidden
     public Vector3 topDownOffset;
     public float lookSpeed = 5;
  
     void LateUpdate()
     {
+        //If player is hidden change to topdown mode for a better view of the enemy
+        //Bird's Eye View Assassin's Creed Reference 
        if(PlayerController.IsHidden)
             TopDownMode();
        else
@@ -23,6 +27,7 @@ public class CameraController : MonoBehaviour
     }
 
 
+    //Camera follows the player 
     void FollowCameraMode()
     {
         Vector3 newPositiion = target.transform.position - target.transform.forward + target.transform.TransformVector(followOffset);
@@ -30,6 +35,7 @@ public class CameraController : MonoBehaviour
         transform.forward = Vector3.Lerp(transform.forward, target.transform.forward, lookSpeed *Time.deltaTime);
     }
 
+    //Change the position of the camera to topdown
     void TopDownMode()
     {
         Vector3 newPositiion = target.transform.position + topDownOffset;

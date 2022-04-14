@@ -5,15 +5,17 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    //Health
     public int maxHealth = 100;
     public int currentHealth;
-
     public HealthBar healthBar; 
 
+    //Movement
     public float runSpeed = 5;
     public float walkSpeed = 1.8f;
     public float rotationSpeed = 180;
 
+    
     public bool IsStealth = false;
     public static bool IsHidden = false;
     public bool IsMoving = false;
@@ -21,32 +23,35 @@ public class PlayerController : MonoBehaviour
 
     //Local 
     private bool isHidable = false;
-   
-
     Animator animator;
     Rigidbody rb;
     CapsuleCollider myCollider;
-    //mesh of the player
+
+    //Mesh of the player
     GameObject graphics;
 
     // Start is called before the first frame update
     void Start()
     {
+        //Set health
         healthBar.SetMaxHealth(maxHealth);
         currentHealth = maxHealth;
 
+        //Get necessary components
         graphics = transform.GetChild(0).gameObject;
         animator = transform.GetComponentInChildren<Animator>();
         rb= GetComponent<Rigidbody>();
         myCollider = GetComponent<CapsuleCollider>();
     }
 
+    //Update function for the Player Controller
     void Update()
     {
         if (IsDead)
             return;
         CheckHideSpot();
 
+        //If not hidden check for the other functions
         if (!IsHidden)
         {
             CheckStealth();
@@ -59,6 +64,7 @@ public class PlayerController : MonoBehaviour
 
     #region Methods
 
+    //If the player dies form the damage taken play spefic animation and relod the scene afteer couple of seconds
     public void KillPlayer()
     {
         TakeDamage(20);
@@ -70,6 +76,7 @@ public class PlayerController : MonoBehaviour
         }
        
     }
+    //When pressing E set the following values to inverted values
     void CheckHideSpot()
     {
         if(Input.GetKey(KeyCode.E) && isHidable)
@@ -82,12 +89,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Take damage function 
     void TakeDamage(int damage)
     {
         currentHealth -= damage;
 
         healthBar.SetHealth(currentHealth);
     }
+
+    //Movement on the Vertical Axis based on each state of the player (running/stealth))
     void Move()
     {
         float verticalMove = Input.GetAxis("Vertical");
@@ -101,23 +111,27 @@ public class PlayerController : MonoBehaviour
         IsMoving = verticalMove !=0;
     }
 
+    //Rotation on Horizontal axis for player to look around using "A" & "D" keys
     void Rotation()
     {
         float horizontalMove = Input.GetAxis("Horizontal");
         transform.Rotate(Vector3.up, horizontalMove * rotationSpeed * Time.deltaTime);
     }
 
+    //Check if the player is in Stealth Mode
     void CheckStealth()
     {
         if(Input.GetKeyDown(KeyCode.C))
         {
-            IsStealth =!IsStealth;
+            IsStealth = !IsStealth;
             animator.SetBool("IsStealth", IsStealth);
 
         }
     }
     #endregion
 
+
+    //Check if other collider is equal to the tag and set isHidable to either true/false
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Hidable")
