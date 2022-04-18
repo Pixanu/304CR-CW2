@@ -67,7 +67,7 @@ public class EnemyController : MonoBehaviour
     {
         gun = GetComponent<AudioSource>();
 
-        //Evaluating the walk,run and chase aniamtion curves at the beggining of the curve.
+        //Evaluating the walk,run and chase aniamtion curves at the beginning of the curve.
         walkTime = 0f;
         walkSpeed = walkCurve.Evaluate(walkTime);
 
@@ -297,7 +297,7 @@ public class EnemyController : MonoBehaviour
             Debug.Log("The Player is in sight and Shoot State Active");
         }
         else
-        //If player not in sight durring chasing listen for sounds moce to an Alert state
+        //If player not in sight durring chasing listen for sounds move to an Alert state
         {
             if(!PlayerInSight())
                 ChangeState(AIState.Alert);
