@@ -10,3 +10,4 @@ Controls:
 - C - Crouch
 - E - Invisibility near purple walls (it may be requiered to press for a couple of times) 
  
+Video Link: https://youtu.be/hh7q7OpPhB4
